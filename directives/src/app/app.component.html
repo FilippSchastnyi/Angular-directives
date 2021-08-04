@@ -1,0 +1,13 @@
+<div class="container">
+  <input type="text" [(ngModel)]="searchVal" >
+  <button class="btn"
+          (click)="toggleType('title')">
+    Title</button>
+  <button class="btn"
+          (click)="toggleType('text')"
+  >Text</button>
+  <div class="card" *ngFor="let post of posts | filter: searchVal: type">
+    <h2>{{post.title}}</h2>
+    <p>{{post.text}}</p>
+  </div>
+</div>
