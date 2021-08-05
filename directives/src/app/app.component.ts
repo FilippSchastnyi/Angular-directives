@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {delay} from "rxjs/operators";
 
-export interface Post {
+export interface Todo {
+  id?: number,
   title: string,
-  text: string
 }
 
 @Component({
@@ -12,29 +14,51 @@ export interface Post {
 })
 
 
-export class AppComponent {
-  posts: Post[] = [
-    {
-      title: 'Beer', text: 'The best beer in the world!!!'
-    },
-    {
-      title: 'Bread', text: 'The best bread in the world!!!'
-    },
-    {
-      title: 'JS', text: 'The best language in the world!!!'
-    },
-    {
-      title: 'Qwer', text: 'fastertaster'
-    },
-    {
-      title: 'DCA', text: 'SFA!'
-    },
-  ]
+export class AppComponent implements OnInit{
 
-  searchVal:string=''
-  type:string = 'title'
+  todos: Todo[] = []
 
-  toggleType(type: string){
-    this.type = type
+  loading: boolean = false
+  todoTitle: string = '';
+
+
+  constructor(private http: HttpClient) {
+
+  }
+
+  ngOnInit(){
+    this.fetchTodos()
+  }
+
+  addTodo() {
+     if(!this.todoTitle.trim()){
+       return
+     }
+      const newTodo : Todo = {
+        title: this.todoTitle,
+      }
+
+     this.http.post<Todo>('https://jsonplaceholder.typicode.com/posts', newTodo)
+       .subscribe(todo=>{
+         this.todos.push(todo)
+         this.todoTitle =''
+       })
+  }
+
+  fetchTodos() {
+    this.loading = true
+    this.http.get<Todo[]>('https://jsonplaceholder.typicode.com/posts?_limit=2')
+      .pipe(delay(1500))
+      .subscribe(todos => {
+        this.todos = todos
+        this.loading = false
+      })
+  }
+
+  removeTodo(id: any) {
+    this.http.delete<void>(`https://jsonplaceholder.typicode.com/posts/${id}`)
+      .subscribe(()=>{
+        this.todos = this.todos.filter((t) => t.id !== id)
+      })
   }
 }
